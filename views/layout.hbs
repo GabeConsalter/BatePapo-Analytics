@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{{title}}</title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <link rel='stylesheet' href='/stylesheets/semantic.min.css' />
+    <link rel='stylesheet' href='/stylesheets/calendar.min.css' />
+    <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css"/>
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:100,400" rel="stylesheet">
+  </head>
+  <body>
+    {{{body}}}
+
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+    <script type="text/javascript" src="//cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script>
+    <script type="text/javascript" src="/javascripts/semantic.min.js"></script>
+    <script type="text/javascript" src="/javascripts/calendar.min.js"></script>
+    <script type="text/javascript" src="/javascripts/jquery.animateNumber.min.js"></script>
+  </body>
+  <script>
+
+    let filtering = false;
+    let filterString = '';
+
+    $('#filter').calendar({
+      type: 'date',
+      today: true,
+      monthFirst: false,
+      formatter: {
+        date: function (date, settings) {
+          if (!date) return '';
+          var day = date.getDate() + '';
+          if (day.length < 2) {
+              day = '0' + day;
+          }
+          var month = (date.getMonth() + 1) + '';
+          if (month.length < 2) {
+              month = '0' + month;
+          }
+          var year = date.getFullYear();
+
+          return day + '/' + month + '/' + year;
+        }
+      },
+      onChange: (date, text, mode) => {
+        if(filtering === false){
+
+          filtering = {
+            dataInicial: text,
+            dataFinal: ''
+          };
+
+        }else{
+          filtering.dataFinal = text;
+
+          $('#filter span').text(filtering.dataInicial + ' - ' + filtering.dataFinal);
+
+          filtering = false;
+
+          switch ($('.slick-active .header .content').text().trim()){
+            case 'Chats realizados':
+              requestChats();
+              break;
+            case 'Acessos de usuários':
+              requestAcessos();
+              break;
+            case 'Tópicos':
+              requestTopicos();
+              break;
+          }
+        }
+      },
+      onHide: () => {
+        if(filtering !== false) {
+          $('#filter').trigger('click');
+        }
+      }
+    })
+
+    $(document)
+      .ready(() => {
+
+        $('#content').slick({
+          prevArrow: $('#prevArrow'),
+          nextArrow: $('#nextArrow')
+        });
+
+      })
+    ;
+
+    $('#content')
+      .on('swipe', (event, slick, direction) => {
+        switch (slick.currentSlide){
+          case 0:
+            $('#left span').text('Tópicos');
+            $('#right span').text('Acessos de usuários');
+            break;
+            requestChats();
+          case 1:
+            $('#left span').text('Chats realizados');
+            $('#right span').text('Tópicos');
+            requestAcessos();
+            break;
+          case 2:
+            $('#left span').text('Acessos de usuários');
+            $('#right span').text('Chats realizados');
+            requestTopicos();
+            break;
+        }
+      })
+    ;
+
+    $('button')
+      .on('click', (e) => {
+        $('#content').slick(`${$(e.currentTarget).attr('data-action')}`);
+
+        switch ($('.slick-active .header .content').text().trim()){
+          case 'Chats realizados':
+            $('#left span').text('Tópicos');
+            $('#right span').text('Acessos de usuários');
+            requestChats();
+            break;
+          case 'Acessos de usuários':
+            $('#left span').text('Chats realizados');
+            $('#right span').text('Tópicos');
+            requestAcessos();
+            break;
+          case 'Tópicos':
+            $('#left span').text('Acessos de usuários');
+            $('#right span').text('Chats realizados');
+            requestTopicos();
+            break;
+        }
+      });
+    ;
+
+    $(window)
+      .on('load', () => {
+
+        $('#filter span').text('01/01/2018 - 13/05/2018');
+
+        requestChats();
+      })
+    ;
+
+    function startLoading(el){
+      el.html('<div class="loading"></div>');
+    }
+
+    function stopLoading(el){
+      el.html(`
+        <div class="ui grid">
+          <div class="ui column eight wide">
+            <span class="number"></span>
+          </div>
+          <div class="ui column eight wide">
+            <div class="chatUsers">
+              <div class="ui massive list"></div>
+            </div>
+          </div>
+        </div>`
+      );
+    }
+
+    function stopLoadingTopicos(el){
+      el.html(`
+        <div class="ui grid">
+          <div class="ui column eight wide">
+            <div class="numberTopicos ui massive list">
+              <div class="item">
+                <i class="ui icon car"></i>
+                <div class="content">
+                  <div class="header">
+                    Multas de trânsito
+                  </div>
+                  <span class="contagem"></span>
+                  <span class="posfix"></span>
+                </div>
+              </div>
+              <div class="item">
+                <i class="ui icon ambulance"></i>
+                <div class="content">
+                  <div class="header">
+                    Sistema nacional de saúde
+                  </div>
+                  <span class="contagem"></span>
+                  <span class="posfix"></span>
+                </div>
+              </div>
+              <div class="item">
+                <i class="ui icon dollar sign"></i>
+                <div class="content">
+                  <div class="header">
+                    Preço da gasolina
+                  </div>
+                  <span class="contagem"></span>
+                  <span class="posfix"></span>
+                </div>
+              </div>
+              <div class="item">
+                <i class="ui icon shield alternate"></i>
+                <div class="content">
+                  <div class="header">
+                    Segurança pública
+                  </div>
+                  <span class="contagem"></span>
+                  <span class="posfix"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="ui column eight wide">
+            <div class="numberTopicos ui massive list">
+              <div class="item">
+                <i class="ui icon graduation cap"></i>
+                <div class="content">
+                  <div class="header">
+                    Educação
+                  </div>
+                  <span class="contagem"></span>
+                  <span class="posfix"></span>
+                </div>
+              </div>
+              <div class="item">
+                <i class="ui icon heart outline"></i>
+                <div class="content">
+                  <div class="header">
+                    Traição
+                  </div>
+                  <span class="contagem"></span>
+                  <span class="posfix"></span>
+                </div>
+              </div>
+              <div class="item">
+                <i class="ui icon blind"></i>
+                <div class="content">
+                  <div class="header">
+                    Aposentadoria
+                  </div>
+                  <span class="contagem"></span>
+                  <span class="posfix"></span>
+                </div>
+              </div>
+              <div class="item">
+                <i class="ui icon user circle"></i>
+                <div class="content">
+                  <div class="header">
+                    Eleições 2018
+                  </div>
+                  <span class="contagem"></span>
+                  <span class="posfix"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `);
+    }
+
+    function requestChats(){
+
+      $('#loading').removeClass('hide');
+
+      startLoading($('#chats'));
+
+      $.post('/chats', {dataInicial: getFilter().dataInicial, dataFinal: getFilter().dataFinal}, (data) => {
+
+        stopLoading($('#chats'));
+
+        $('#chats .number').animateNumber({number: data.chats.qtChats});
+
+        let chats = [];
+
+        data.chatsUser.map((x, i) => {
+          if(x.cont > 0) {
+            chats.push({i});
+
+            $('.chatUsers .list').html(
+              $('.chatUsers .list').html() + `
+                <div class="item">
+                  <div class="header" style="color: #FFF;">${x.nomeUsuario}</div>
+                  <span></span>
+                </div>
+              `
+            );
+          }
+        });
+
+        $.each($('.item span'), (i, x) => {
+          $(x).animateNumber({number: data.chatsUser[chats[i].i].cont});
+        });
+      });
+    }
+
+    function requestAcessos(){
+
+      startLoading($('#acessos'));
+
+      $.post('/acessos', {dataInicial: getFilter().dataInicial, dataFinal: getFilter().dataFinal}, (data) => {
+
+        stopLoading($('#acessos'));
+
+        $('#acessos .number').animateNumber({number: data.qtAcessos});
+      });
+    }
+
+    function requestTopicos(){
+
+      startLoading($('#topicos'));
+
+      $.post('/topicos', {dataInicial: getFilter().dataInicial, dataFinal: getFilter().dataFinal}, (data) => {
+
+        stopLoadingTopicos($('#topicos'));
+
+        $.each($('.item .contagem'), (i, x) => {
+          $(x).animateNumber({number: data[i].contagem});
+          $($(x).context.nextElementSibling).text(data[i].contagem > 1 ? 'conversas' : 'conversa');
+        });
+      });
+    }
+
+    function getFilter(){
+      return {
+        dataInicial: $('#filter span').text().split('-')[0].trim().replace(new RegExp('/', 'g'), '-') + ' 00:00:00',
+        dataFinal: $('#filter span').text().split('-')[1].trim().replace(new RegExp('/', 'g'), '-') + ' 23:59:59'
+      }
+    }
+
+  </script>
+</html>
