@@ -21,7 +21,16 @@
   <script>
 
     let filtering = false;
-    let filterString = '';
+
+    let today = new Date();
+    let day = today.getDate().length > 1 ? today.getDate() : '0' + today.getDate();
+    let month = today.getMonth() + 1;
+    month = month.length > 1 ? month : '0' + month;
+
+    let filter = {
+      dataInicial: '01-01-2018 00:00:00',
+      dataFinal: day + '-' + month + '-' + today.getFullYear() + ' 23:59:59'
+    }
 
     $('#filter').calendar({
       type: 'date',
@@ -45,16 +54,14 @@
       },
       onChange: (date, text, mode) => {
         if(filtering === false){
+          filtering = true;
 
-          filtering = {
-            dataInicial: text,
-            dataFinal: ''
-          };
+          filter.dataInicial = text.replace(new RegExp('/', 'g'), '-') + ' 00:00:00';
 
         }else{
-          filtering.dataFinal = text;
+          filter.dataFinal = text.replace(new RegExp('/', 'g'), '-') + ' 23:59:59';
 
-          $('#filter span').text(filtering.dataInicial + ' - ' + filtering.dataFinal);
+          $('#filter span').text(filter.dataInicial.split(' ')[0].replace(new RegExp('-', 'g'), '/') + ' - ' + text);
 
           filtering = false;
 
@@ -138,7 +145,12 @@
     $(window)
       .on('load', () => {
 
-        $('#filter span').text('01/01/2018 - 13/05/2018');
+        let today = new Date();
+        let day = today.getDate().length > 1 ? today.getDate() : '0' + today.getDate();
+        let month = today.getMonth() + 1;
+        month = month.length > 1 ? month : '0' + month;
+
+        $('#filter span').text('01/01/2018 - ' + day + '/' + month + '/' + today.getFullYear());
 
         requestChats();
       })
@@ -264,7 +276,7 @@
 
       startLoading($('#chats'));
 
-      $.post('/chats', {dataInicial: getFilter().dataInicial, dataFinal: getFilter().dataFinal}, (data) => {
+      $.post('/chats', {dataInicial: filter.dataInicial, dataFinal: filter.dataFinal}, (data) => {
 
         stopLoading($('#chats'));
 
@@ -297,7 +309,7 @@
 
       startLoading($('#acessos'));
 
-      $.post('/acessos', {dataInicial: getFilter().dataInicial, dataFinal: getFilter().dataFinal}, (data) => {
+      $.post('/acessos', {dataInicial: filter.dataInicial, dataFinal: filter.dataFinal}, (data) => {
 
         stopLoading($('#acessos'));
 
@@ -309,7 +321,7 @@
 
       startLoading($('#topicos'));
 
-      $.post('/topicos', {dataInicial: getFilter().dataInicial, dataFinal: getFilter().dataFinal}, (data) => {
+      $.post('/topicos', {dataInicial: filter.dataInicial, dataFinal: filter.dataFinal}, (data) => {
 
         stopLoadingTopicos($('#topicos'));
 
@@ -318,13 +330,6 @@
           $($(x).context.nextElementSibling).text(data[i].contagem > 1 ? 'conversas' : 'conversa');
         });
       });
-    }
-
-    function getFilter(){
-      return {
-        dataInicial: $('#filter span').text().split('-')[0].trim().replace(new RegExp('/', 'g'), '-') + ' 00:00:00',
-        dataFinal: $('#filter span').text().split('-')[1].trim().replace(new RegExp('/', 'g'), '-') + ' 23:59:59'
-      }
     }
 
   </script>

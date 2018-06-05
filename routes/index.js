@@ -10,56 +10,61 @@ router.get('/', function(req, res, next) {
 
 router.post('/chats', (req, res) => {
 
-  request.get({
-      uri: 'https://batepaporest.herokuapp.com/chats-realizados',
-      form: {
-        dataInicial: req.body.dataInicial,
-        dataFinal: req.body.dataFinal
-      }
+  let {dataInicial, dataFinal} = req.body;
+
+  console.log({dataInicial, dataFinal});
+
+  request.post({
+    header: {
+      'Content-Type' : 'application/json'
     },
-    (err, requestRes, body) => {
+    url: 'https://batepaporest.herokuapp.com/chats-realizados',
+    json: {dataInicial, dataFinal}
+  }, (err, requestRes, body) => {
 
-      request.get({
-        uri: 'https://batepaporest.herokuapp.com/chats-por-usuario',
-          form: {
-            dataInicial: req.body.dataInicial,
-            dataFinal: req.body.dataFinal
-          }
+    request.post({
+      header: {
+        'Content-Type' : 'application/json'
       },
-      (errr, requestRess, bodyy) => {
+      url: 'https://batepaporest.herokuapp.com/chats-por-usuario',
+      json: {dataInicial, dataFinal}
+    }, (errr, requestRess, bodyy) => {
 
-        res.send({chats: JSON.parse(body), chatsUser: JSON.parse(bodyy)});
+      res.send({chats: body, chatsUser: bodyy})
 
-      });
-    });
+    })
+
+  });
 });
 
 router.post('/acessos', (req, res) => {
 
-  request.get({
-      uri: 'https://batepaporest.herokuapp.com/usuarios-acessos-rede',
-      form: {
-        dataInicial: req.body.dataInicial,
-        dataFinal: req.body.dataFinal
-      }
+  let {dataInicial, dataFinal} = req.body;
+
+  request.post({
+    header: {
+      'Content-Type' : 'application/json'
     },
-    (err, requestRes, body) => {
-      res.send(JSON.parse(body));
-    });
+    uri: 'https://batepaporest.herokuapp.com/usuarios-acessos-rede',
+    json: {dataInicial, dataFinal}
+  }, (err, requestRes, body) => {
+    res.send(body);
+  });
 });
 
 router.post('/topicos', (req, res) => {
 
-  request.get({
-      uri: 'https://batepaporest.herokuapp.com/topicos-mais-acessados',
-      form: {
-        dataInicial: req.body.dataInicial,
-        dataFinal: req.body.dataFinal
-      }
+  let {dataInicial, dataFinal} = req.body;
+
+  request.post({
+    header: {
+      'Content-Type' : 'applcation/json'
     },
-    (err, requestRes, body) => {
-      res.send(JSON.parse(body));
-    });
+    uri: 'https://batepaporest.herokuapp.com/topicos-mais-acessados',
+    json: {dataInicial, dataFinal}
+  }, (err, requestRes, body) => {
+    res.send(body);
+  });
 });
 
 module.exports = router;
