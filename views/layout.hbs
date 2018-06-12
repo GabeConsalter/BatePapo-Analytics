@@ -23,7 +23,7 @@
     let filtering = false;
 
     let today = new Date();
-    let day = Number(today.getDate()) > 9 ? today.getDate() : '0' + today.getDate();
+    let day = today.getDate() > 9 ? today.getDate() : '0' + today.getDate();
     let month = today.getMonth() + 1;
     month = month.length > 1 ? month : '0' + month;
 
